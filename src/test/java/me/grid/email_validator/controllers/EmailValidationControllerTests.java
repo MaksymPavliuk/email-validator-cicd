@@ -31,15 +31,15 @@ public class EmailValidationControllerTests {
 
     @Test
     public void withValidRequestBody(){
-        ArrayList<String> arrayList = new ArrayList<>(List.of(
+        List<String> list = List.of(
                 "validemail+_+_+_+_+.......@gmail.com",
                 "invalidEmail####>>>>@gmail.com"
-        ));
-        EmailResponse emailResponse = emailValidationController.getGroupedEmails(new EmailRequest(arrayList));
+        );
+        EmailResponse emailResponse = emailValidationController.getGroupedEmails(new EmailRequest(list));
 
         System.out.println(emailResponse.getValidEmails().toString() + " " + emailResponse.getInvalidEmails().toString());
-        assertTrue(emailResponse.getValidEmails().contains(arrayList.getFirst()));
-        assertTrue(emailResponse.getInvalidEmails().contains(arrayList.get(1)));
+        assertTrue(emailResponse.getValidEmails().contains(list.get(0)));
+        assertTrue(emailResponse.getInvalidEmails().contains(list.get(1)));
     }
 
 }

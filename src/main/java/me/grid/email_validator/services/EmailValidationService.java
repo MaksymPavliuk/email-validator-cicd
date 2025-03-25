@@ -4,7 +4,10 @@ import me.grid.email_validator.dataTransferObjects.EmailRequest;
 import me.grid.email_validator.dataTransferObjects.EmailResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class EmailValidationService {
@@ -12,18 +15,12 @@ public class EmailValidationService {
     public EmailResponse groupEmails(EmailRequest emailRequest){
         verifyIfInputIsValid(emailRequest);
 
-        EmailResponse emailResponse = new EmailResponse();
         Predicate<String> matchingRegex = a -> a.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
-        emailRequest.getEmails().stream()
-                .filter(matchingRegex)
-                .forEach(emailResponse::addValid);
+        Map<Boolean, List<String>> partitionedEmails = emailRequest.getEmails().stream()
+                .collect(Collectors.partitioningBy(matchingRegex));
 
-        emailRequest.getEmails().stream()
-                .filter(matchingRegex.negate())
-                .forEach(emailResponse::addInvalid);
-
-        return emailResponse;
+        return new EmailResponse(partitionedEmails.get(true), partitionedEmails.get(false));
     }
 
     public void verifyIfInputIsValid(EmailRequest emailRequest){

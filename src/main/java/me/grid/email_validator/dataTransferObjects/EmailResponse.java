@@ -1,25 +1,23 @@
 package me.grid.email_validator.dataTransferObjects;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class EmailResponse {
 
-    private ArrayList<String> validEmails = new ArrayList<>();
-    private ArrayList<String> invalidEmails = new ArrayList<>();
+    private List<String> validEmails = new ArrayList<>();
+    private List<String> invalidEmails = new ArrayList<>();
 
-    public void addValid(String value){
-        validEmails.add(value);
-    }
-
-    public void addInvalid(String value){
-        invalidEmails.add(value);
-    }
-
-    public ArrayList<String> getInvalidEmails() {
+    public List<String> getInvalidEmails() {
         return invalidEmails;
     }
 
-    public ArrayList<String> getValidEmails() {
+    public List<String> getValidEmails() {
         return validEmails;
+    }
+
+    public EmailResponse(List<String> validEmails, List<String> invalidEmails){
+        this.validEmails = validEmails;
+        this.invalidEmails = invalidEmails;
     }
 }

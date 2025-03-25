@@ -1,16 +1,16 @@
 package me.grid.email_validator.dataTransferObjects;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class EmailRequest {
 
-    private ArrayList<String> emails;
+    private List<String> emails;
 
-    public EmailRequest(ArrayList<String> emails) {
+    public EmailRequest(List<String> emails) {
         this.emails = emails;
     }
 
-    public ArrayList<String> getEmails() {
+    public List<String> getEmails() {
         return emails;
     }
 }
