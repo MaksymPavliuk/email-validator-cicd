@@ -31,6 +31,17 @@ public class EmailValidationService {
         if (emailRequest.getEmails().isEmpty()) {
             throw new IllegalArgumentException("Empty list in the request body. Try {\"emails\":[\"email1\"]}");
         }
+        emailRequest.getEmails()
+                .forEach(this::checkLengthAndWhitespaces);
+    }
+
+    public void checkLengthAndWhitespaces(String email) {
+        if (email.length() > 100){
+            throw new IllegalArgumentException("Email: " + email + " \nis too long. Maximum is 100 characters, but this one is: " + email.length());
+        }
+        if (email.contains(" ")) {
+            throw new IllegalArgumentException("Email: " + email + " \nhas whitespaces");
+        }
     }
 
 }

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,24 @@ class EmailValidationServiceTest {
         );
 
         assertTrue(thrown.getMessage().contains("Not a valid request body"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("me.grid.email_validator.dataProviders.EmailTestData#emailListProvider")
+    public void verifyingDistribution(List<String> validArray, List<String> invalidArray){
+        List<String> arrayList = new ArrayList<>();
+        arrayList.addAll(validArray);
+        arrayList.addAll(invalidArray);
+
+        EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
+
+        System.out.println("Invalid:");
+        emailResponse.getInvalidEmails().forEach(System.out::println);
+        System.out.println("Valid:");
+        emailResponse.getValidEmails().forEach(System.out::println);
+
+        assertEquals(emailResponse.getValidEmails(), validArray);
+        assertEquals(emailResponse.getInvalidEmails(), invalidArray);˙
     }
 
     @ParameterizedTest
