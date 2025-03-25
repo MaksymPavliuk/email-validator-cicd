@@ -27,6 +27,9 @@ public class EmailValidationService {
         if (emailRequest.getEmails() == null) {
             throw new IllegalArgumentException("Not a valid request body. Try {\"emails\":[...]}");
         }
+        if (emailRequest.getEmails().isEmpty()) {
+            throw new IllegalArgumentException("Empty list in the request body. Try {\"emails\":[\"email1\"]}");
+        }
     }
 
 }
