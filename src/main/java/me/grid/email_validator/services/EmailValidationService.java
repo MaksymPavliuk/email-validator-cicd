@@ -15,7 +15,8 @@ public class EmailValidationService {
     public EmailResponse groupEmails(EmailRequest emailRequest){
         verifyIfInputIsValid(emailRequest);
 
-        Predicate<String> matchingRegex = a -> a.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+        Predicate<String> matchingRegex =
+                a -> a.matches("^[\\p{L}\\p{N}._%+-]+@[\\p{L}\\p{N}.-]+\\.\\p{L}{2,}$");
 
         Map<Boolean, List<String>> partitionedEmails = emailRequest.getEmails().stream()
                 .collect(Collectors.partitioningBy(matchingRegex));

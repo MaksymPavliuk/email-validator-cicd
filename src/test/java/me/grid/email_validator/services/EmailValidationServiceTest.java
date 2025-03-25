@@ -72,7 +72,19 @@ class EmailValidationServiceTest {
         assertTrue(emailResponse.getValidEmails().contains(arrayList.get(0)));
     }
 
-    // no need to parametrize (the range is (domainName should be > 2 characters))
+    @ParameterizedTest
+    @CsvFileSource(resources = "/unicode.csv")
+    public void withUnicode(String validEmail){
+        List<String> arrayList = List.of(
+                validEmail
+        );
+        EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
+
+        System.out.println(emailResponse.getValidEmails().toString() + " " + emailResponse.getInvalidEmails().toString());
+        assertTrue(emailResponse.getValidEmails().contains(arrayList.get(0)));
+    }
+
+    // no need to parametrize (the range is too small)
     @Test
     public void withShortDomains(){
         ArrayList<String> arrayList = new ArrayList<>(List.of(
