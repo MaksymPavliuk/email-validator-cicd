@@ -74,6 +74,7 @@ public class ApiTests {
                 .when().post("")
                 .then()
                 .assertThat()
+                .statusCode(400)
                 .body(containsString("Not a valid request body"));
     }
 
@@ -84,6 +85,7 @@ public class ApiTests {
                 .when().post("")
                 .then()
                 .assertThat()
+                .statusCode(400)
                 .body(containsString("Request body is missing"));
     }
 
