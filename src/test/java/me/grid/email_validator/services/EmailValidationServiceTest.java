@@ -37,20 +37,18 @@ class EmailValidationServiceTest {
 
     @ParameterizedTest
     @MethodSource("me.grid.email_validator.dataProviders.EmailTestData#emailListProvider")
-    public void verifyingDistribution(List<String> validArray, List<String> invalidArray){
+    public void verifyingDistributionAndSize(List<String> validArray, List<String> invalidArray){
         List<String> arrayList = new ArrayList<>();
         arrayList.addAll(validArray);
         arrayList.addAll(invalidArray);
 
         EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
 
-        System.out.println("Invalid:");
-        emailResponse.getInvalidEmails().forEach(System.out::println);
-        System.out.println("Valid:");
-        emailResponse.getValidEmails().forEach(System.out::println);
-
         assertEquals(emailResponse.getValidEmails(), validArray);
-        assertEquals(emailResponse.getInvalidEmails(), invalidArray);˙
+        assertEquals(emailResponse.getInvalidEmails(), invalidArray);
+
+        assertEquals(emailResponse.getValidEmails().size(), validArray.size());
+        assertEquals(emailResponse.getInvalidEmails().size(), invalidArray.size());
     }
 
     @ParameterizedTest
@@ -62,7 +60,6 @@ class EmailValidationServiceTest {
         );
         EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
 
-        System.out.println(emailResponse.getValidEmails().toString() + " " + emailResponse.getInvalidEmails().toString());
         assertTrue(emailResponse.getValidEmails().contains(arrayList.get(0)));
         assertTrue(emailResponse.getInvalidEmails().contains(arrayList.get(1)));
     }
@@ -75,7 +72,6 @@ class EmailValidationServiceTest {
         );
         EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
 
-        System.out.println(emailResponse.getValidEmails().toString() + " " + emailResponse.getInvalidEmails().toString());
         assertTrue(emailResponse.getInvalidEmails().contains(arrayList.get(0)));
     }
 
@@ -87,7 +83,6 @@ class EmailValidationServiceTest {
         );
         EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
 
-        System.out.println(emailResponse.getValidEmails().toString() + " " + emailResponse.getInvalidEmails().toString());
         assertTrue(emailResponse.getValidEmails().contains(arrayList.get(0)));
     }
 
@@ -99,7 +94,6 @@ class EmailValidationServiceTest {
         );
         EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
 
-        System.out.println(emailResponse.getValidEmails().toString() + " " + emailResponse.getInvalidEmails().toString());
         assertTrue(emailResponse.getValidEmails().contains(arrayList.get(0)));
     }
 
@@ -112,21 +106,59 @@ class EmailValidationServiceTest {
         ));
         EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
 
-        System.out.println(emailResponse.getValidEmails().toString() + " " + emailResponse.getInvalidEmails().toString());
         assertTrue(emailResponse.getValidEmails().contains(arrayList.get(0)));
         assertTrue(emailResponse.getInvalidEmails().contains(arrayList.get(1)));
     }
 
+    @ParameterizedTest
+    @CsvFileSource(resources = "/withWhiteSpaces.csv")
+    public void withWhiteSpaces(String invalidEmail){
+        List<String> arrayList = List.of(
+                invalidEmail
+        );
+
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class,
+                () -> emailValidationService.groupEmails(new EmailRequest(arrayList)),
+                "Was expected to throw exception but didn't"
+        );
+
+        assertTrue(thrown.getMessage().contains("has whitespaces"));
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/withControlCharacters.csv")
+    public void withControlCharacters(String invalidEmail){
+        List<String> arrayList = List.of(
+                invalidEmail
+        );
+
+        invalidEmail.chars().forEach(ch -> System.out.println("ASCII: " + ch + " -> " + (char) ch));
+
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class,
+                () -> emailValidationService.groupEmails(new EmailRequest(arrayList)),
+                "Was expected to throw exception but didn't"
+        );
+
+        assertTrue(thrown.getMessage().contains("has control characters"));
+    }
+
     // no need to parametrize (only one input applicable)
     @Test
-    public void withEmptyString(){
-        ArrayList<String> arrayList = new ArrayList<>(List.of(
-                "  "
-        ));
-        EmailResponse emailResponse = emailValidationService.groupEmails(new EmailRequest(arrayList));
+    public void withLongEmails(){
+        List<String> arrayList = List.of(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        );
 
-        System.out.println(emailResponse.getValidEmails() + " " + emailResponse.getInvalidEmails());
-        assertTrue(emailResponse.getInvalidEmails().contains(arrayList.get(0)));
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class,
+                () -> emailValidationService.groupEmails(new EmailRequest(arrayList)),
+                "Was expected to throw exception but didn't"
+        );
+
+        assertTrue(thrown.getMessage().contains("is too long"));
     }
 
 }

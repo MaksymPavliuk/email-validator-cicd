@@ -40,7 +40,10 @@ public class EmailValidationService {
             throw new IllegalArgumentException("Email: " + email + " \nis too long. Maximum is 100 characters, but this one is: " + email.length());
         }
         if (email.contains(" ")) {
-            throw new IllegalArgumentException("Email: " + email + " \nhas whitespaces");
+            throw new IllegalArgumentException("Email: " + email + " \nhas whitespaces. Please remove them.");
+        }
+        if (email.chars().anyMatch(Character::isISOControl)) {
+            throw new IllegalArgumentException("Email: " + email + " \nhas control characters. Please remove them.");
         }
     }
 
