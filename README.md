@@ -3,7 +3,7 @@
 ## Setup instructions
 
  1. **Download Java and Maven** - **Java OpenJDK 23.0.2** &&  **Apache Maven 3.9.9**
- 2. **Clone the project**: `git@gitlab.griddynamics.net:mpavliuk/email-validator.git`
+ 2. **Clone the project**: `git clone https://github.com/MaksymPavliuk/email-validator-cicd`
  3. **Build and test** - use `mvn clean install` to ensure that all the dependencies have been downloaded, and the main parts of the application are working on your machine
  4. **Start the server** - use `mvn spring-boot:run`  to start the server. You should see the spring logo in ASCII art and the message: **Started EmailValidatorApplication in 1.415 seconds (process running for 1.724)**. You should also see a message saying what port the server was opened on, it will be useful for later (default is 8080);
  5. **Use the API** - for the purposes of giving an example I'll talk about Postman, but you obviously can do whatever you want with it from now, maybe connect it to your app.
