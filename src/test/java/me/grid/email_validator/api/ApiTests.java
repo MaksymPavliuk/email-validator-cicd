@@ -26,10 +26,11 @@ public class ApiTests {
     APIRequestContext requestContext;
     RequestManager requestManager;
 
+
+
     @BeforeEach
     public void setUp(){
         playwright = Playwright.create();
-
         APIRequest request = playwright.request();
         requestContext = request.newContext();
 
@@ -118,5 +119,41 @@ public class ApiTests {
 
         assertEquals(200, apiResponse.status());
     }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/withWhiteSpaces.csv")
+    public void withWhiteSpaces(String invalidEmail) {
+        var body = requestManager.createBodyFromList(List.of(invalidEmail));
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+
+        assertBadRequestWithMessage(apiResponse, "has whitespaces");
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/withControlCharacters.csv")
+    public void withControlCharacters(String invalidEmail){
+        var body = requestManager.createBodyFromList(List.of(invalidEmail));
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+
+        assertBadRequestWithMessage(apiResponse, "has control characters");
+    }
+
+    // no need to parametrize (only one input applicable)
+    @Test
+    public void withLongEmails(){
+        List<String> arrayList = List.of(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        );
+        var body = requestManager.createBodyFromList(arrayList);
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+
+
+        assertBadRequestWithMessage(apiResponse, "is too long");
+
+
+    }
+
+
 
 }
