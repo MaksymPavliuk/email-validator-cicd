@@ -1,0 +1,5 @@
+/Users/mpavliuk/IdeaProjects/email-validator/src/test/java/me/grid/email_validator/EmailValidatorApplicationTests.java
+/Users/mpavliuk/IdeaProjects/email-validator/src/test/java/me/grid/email_validator/api/ApiTests.java
+/Users/mpavliuk/IdeaProjects/email-validator/src/test/java/me/grid/email_validator/controllers/EmailValidationControllerTests.java
+/Users/mpavliuk/IdeaProjects/email-validator/src/test/java/me/grid/email_validator/dataProviders/EmailTestData.java
+/Users/mpavliuk/IdeaProjects/email-validator/src/test/java/me/grid/email_validator/services/EmailValidationServiceTest.java

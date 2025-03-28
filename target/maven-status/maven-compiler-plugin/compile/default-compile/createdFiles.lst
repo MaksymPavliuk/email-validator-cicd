@@ -1,0 +1,6 @@
+me/grid/email_validator/controllers/EmailValidationController.class
+me/grid/email_validator/dataTransferObjects/EmailResponse.class
+me/grid/email_validator/dataTransferObjects/EmailRequest.class
+me/grid/email_validator/services/EmailValidationService.class
+me/grid/email_validator/exceptions/GlobalExceptionHandler.class
+me/grid/email_validator/EmailValidatorApplication.class
