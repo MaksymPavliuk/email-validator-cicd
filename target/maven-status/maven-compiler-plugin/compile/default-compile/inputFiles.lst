@@ -1,4 +1,5 @@
 /Users/mpavliuk/IdeaProjects/email-validator/src/main/java/me/grid/email_validator/EmailValidatorApplication.java
+/Users/mpavliuk/IdeaProjects/email-validator/src/main/java/me/grid/email_validator/RequestManager.java
 /Users/mpavliuk/IdeaProjects/email-validator/src/main/java/me/grid/email_validator/controllers/EmailValidationController.java
 /Users/mpavliuk/IdeaProjects/email-validator/src/main/java/me/grid/email_validator/dataTransferObjects/EmailRequest.java
 /Users/mpavliuk/IdeaProjects/email-validator/src/main/java/me/grid/email_validator/dataTransferObjects/EmailResponse.java

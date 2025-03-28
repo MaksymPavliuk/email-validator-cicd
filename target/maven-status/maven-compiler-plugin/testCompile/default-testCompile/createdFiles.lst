@@ -1,5 +1,5 @@
 me/grid/email_validator/dataProviders/EmailTestData.class
 me/grid/email_validator/EmailValidatorApplicationTests.class
-me/grid/email_validator/controllers/EmailValidationControllerTests.class
 me/grid/email_validator/services/EmailValidationServiceTest.class
 me/grid/email_validator/api/ApiTests.class
+me/grid/email_validator/controllers/EmailValidationControllerTests.class
