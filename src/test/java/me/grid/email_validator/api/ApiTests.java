@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
@@ -96,5 +97,26 @@ public class ApiTests {
         assertBadRequestWithMessage(apiResponse, "Request body is missing.");
     }
 
+    @ParameterizedTest
+    @MethodSource("me.grid.email_validator.dataProviders.EmailTestData#emailListProvider")
+    public void verifyingDistributionAndSize(List<String> validArray, List<String> invalidArray) throws IOException {
+        List<String> arrayList = new ArrayList<>();
+        arrayList.addAll(validArray);
+        arrayList.addAll(invalidArray);
+
+        var body = requestManager.createBodyFromList(arrayList);
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+        EmailResponse emailResponse = requestManager.getPOJOFromResponse(
+                apiResponse
+        );
+
+        assertEquals(emailResponse.getValidEmails(), validArray);
+        assertEquals(emailResponse.getInvalidEmails(), invalidArray);
+
+        assertEquals(emailResponse.getValidEmails().size(), validArray.size());
+        assertEquals(emailResponse.getInvalidEmails().size(), invalidArray.size());
+
+        assertEquals(200, apiResponse.status());
+    }
 
 }
