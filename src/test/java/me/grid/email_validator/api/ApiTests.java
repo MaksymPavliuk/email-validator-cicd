@@ -1,93 +1,159 @@
 package me.grid.email_validator.api;
 
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.BeforeAll;
+import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.RequestOptions;
+import me.grid.email_validator.RequestManager;
+import me.grid.email_validator.dataTransferObjects.EmailResponse;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
-import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.requestSpecification;
-import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class ApiTests {
 
     static String baseURI = "http://localhost:8080/validate/";
 
-    @BeforeAll
-    public static void setUp(){
-        requestSpecification = given().baseUri(baseURI)
-                .contentType(ContentType.JSON);
+    Playwright playwright;
+    APIRequestContext requestContext;
+    RequestManager requestManager;
+
+
+
+    @BeforeEach
+    public void setUp(){
+        playwright = Playwright.create();
+        APIRequest request = playwright.request();
+        requestContext = request.newContext();
+
+        requestManager = new RequestManager(requestContext);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        playwright.close();
+    }
+
+    public void assertBadRequestWithMessage(APIResponse apiResponse, String message){
+        assertEquals(400, apiResponse.status());
+        assertTrue(apiResponse.text().contains(message));
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/forAPI/invalidEmails.csv")
+    public void testWithValidBody_InvalidEmails(String invalidEmail) throws IOException {
+        var body = requestManager.createBodyFromList(List.of(invalidEmail));
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+        EmailResponse emailResponse = requestManager.getPOJOFromResponse(
+                apiResponse
+        );
+
+        assertEquals(200, apiResponse.status());
+        assertEquals(body.get("emails"), emailResponse.getInvalidEmails());
+    }
+
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/forAPI/validEmails.csv")
+    public void testWithValidBody_ValidEmails(String validEmail) throws IOException {
+        var body = requestManager.createBodyFromList(List.of(validEmail));
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+        EmailResponse emailResponse = requestManager.getPOJOFromResponse(
+                apiResponse
+        );
+
+        assertEquals(200, apiResponse.status());
+        assertEquals(body.get("emails"), emailResponse.getValidEmails());
     }
 
     @Test
-    public void testWithValidBody_InvalidEmails(){
-        Map<String, ArrayList<String>> map = new HashMap<>();
-        map.put("emails", new ArrayList<>(List.of(
-            "invalidEmailOne@@",
-            "invalid####2"
-        )));
+    public void testWithEmptyList() {
+        var body = requestManager.createBodyFromList(List.of());
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
 
-        given()
-                .spec(requestSpecification)
-                .body(map)
-        .when().post("")
-        .then()
-        .assertThat()
-                .statusCode(200)
-                .body("invalidEmails", equalTo(map.get("emails")))
-                .body("validEmails", equalTo(new ArrayList()));
+        assertBadRequestWithMessage(apiResponse, "Empty list in the request body.");
     }
 
     @Test
-    public void testWithValidBody_ValidEmails(){
-        Map<String, ArrayList<String>> map = new HashMap<>();
-        map.put("emails", new ArrayList<>(List.of(
-                "valid1@gma.ua",
-                "valid2+_+_++_+_....@wow.co"
-        )));
+    public void testWithInvalidBody() {
+        Map<String, List<String>> body = new HashMap<>();
+        body.put("e", List.of("aaaa"));
+        var apiResponse = requestContext.post(baseURI, RequestOptions.create().setData(body));
 
-        given()
-                .spec(requestSpecification)
-                .body(map)
-                .when().post("")
-                .then()
-                .assertThat()
-                    .statusCode(200)
-                    .body("validEmails", equalTo(map.get("emails")))
-                    .body("invalidEmails", equalTo(new ArrayList()));
-    }
-
-    @Test
-    public void testWithInvalidBody(){
-        Map<String, ArrayList<String>> map = new HashMap<>();
-        map.put("email", new ArrayList<>());
-
-        given()
-                .spec(requestSpecification)
-                .body(map)
-                .when().post("")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .body(containsString("Not a valid request body"));
+        assertBadRequestWithMessage(apiResponse, "Not a valid request body.");
     }
 
     @Test
     public void testWithoutABody(){
-        given()
-                .spec(requestSpecification)
-                .when().post("")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .body(containsString("Request body is missing"));
+        var apiResponse = requestContext.post(baseURI);
+
+        assertBadRequestWithMessage(apiResponse, "Request body is missing.");
     }
+
+    @ParameterizedTest
+    @MethodSource("me.grid.email_validator.dataProviders.EmailTestData#emailListProvider")
+    public void verifyingDistributionAndSize(List<String> validArray, List<String> invalidArray) throws IOException {
+        List<String> arrayList = new ArrayList<>();
+        arrayList.addAll(validArray);
+        arrayList.addAll(invalidArray);
+
+        var body = requestManager.createBodyFromList(arrayList);
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+        EmailResponse emailResponse = requestManager.getPOJOFromResponse(
+                apiResponse
+        );
+
+        assertEquals(emailResponse.getValidEmails(), validArray);
+        assertEquals(emailResponse.getInvalidEmails(), invalidArray);
+
+        assertEquals(emailResponse.getValidEmails().size(), validArray.size());
+        assertEquals(emailResponse.getInvalidEmails().size(), invalidArray.size());
+
+        assertEquals(200, apiResponse.status());
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/withWhiteSpaces.csv")
+    public void withWhiteSpaces(String invalidEmail) {
+        var body = requestManager.createBodyFromList(List.of(invalidEmail));
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+
+        assertBadRequestWithMessage(apiResponse, "has whitespaces");
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/withControlCharacters.csv")
+    public void withControlCharacters(String invalidEmail){
+        var body = requestManager.createBodyFromList(List.of(invalidEmail));
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+
+        assertBadRequestWithMessage(apiResponse, "has control characters");
+    }
+
+    // no need to parametrize (only one input applicable)
+    @Test
+    public void withLongEmails(){
+        List<String> arrayList = List.of(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        );
+        var body = requestManager.createBodyFromList(arrayList);
+        var apiResponse = requestManager.sendPostRequestWithBody(body);
+
+
+        assertBadRequestWithMessage(apiResponse, "is too long");
+
+
+    }
+
 
 
 }

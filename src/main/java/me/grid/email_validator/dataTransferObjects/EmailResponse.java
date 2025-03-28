@@ -16,6 +16,8 @@ public class EmailResponse {
         return validEmails;
     }
 
+    public EmailResponse(){}
+
     public EmailResponse(List<String> validEmails, List<String> invalidEmails){
         this.validEmails = validEmails;
         this.invalidEmails = invalidEmails;
